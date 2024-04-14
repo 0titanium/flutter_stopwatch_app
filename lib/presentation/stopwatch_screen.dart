@@ -13,6 +13,7 @@ class _StopWatchScreenState extends State<StopWatchScreen> {
   Timer? _timer;
   int _time = 0;
   bool _isRunning = false;
+  bool _hasStarted = false;
 
   final List<dynamic> _labTimes = [];
 
@@ -27,6 +28,7 @@ class _StopWatchScreenState extends State<StopWatchScreen> {
   }
 
   void _start() {
+    _hasStarted = true;
     _timer = Timer.periodic(const Duration(milliseconds: 10), (timer) {
       setState(() {
         _time++;
@@ -38,12 +40,22 @@ class _StopWatchScreenState extends State<StopWatchScreen> {
     _timer?.cancel();
   }
 
+  void _reset() {
+    _isRunning = false;
+    _hasStarted = false;
+    _timer?.cancel();
+    _labTimes.clear();
+    _time = 0;
+  }
+
   void _recordLabTime(String time) {
     _labTimes.insert(0, [_labTimes.length + 1, time]);
   }
 
   @override
   void dispose() {
+    _timer?.cancel();
+
     super.dispose();
   }
 
@@ -82,23 +94,34 @@ class _StopWatchScreenState extends State<StopWatchScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _isRunning == false
+              _hasStarted == false
                   ? const FloatingActionButton.large(
                       shape: CircleBorder(eccentricity: 0.1),
                       backgroundColor: Colors.grey,
                       onPressed: null,
                       child: Text('Lab'),
                     )
-                  : FloatingActionButton.large(
-                      shape: const CircleBorder(eccentricity: 0.1),
-                      backgroundColor: Colors.grey,
-                      onPressed: () {
-                        setState(() {
-                          _recordLabTime('$min:$sec.$hundredth');
-                        });
-                      },
-                      child: const Text('Lab'),
-                    ),
+                  : _isRunning
+                      ? FloatingActionButton.large(
+                          shape: const CircleBorder(eccentricity: 0.1),
+                          backgroundColor: Colors.grey,
+                          onPressed: () {
+                            setState(() {
+                              _recordLabTime('$min:$sec.$hundredth');
+                            });
+                          },
+                          child: const Text('Lab'),
+                        )
+                      : FloatingActionButton.large(
+                          shape: const CircleBorder(eccentricity: 0.1),
+                          backgroundColor: Colors.grey,
+                          onPressed: () {
+                            setState(() {
+                              _reset();
+                            });
+                          },
+                          child: const Text('Reset'),
+                        ),
               const SizedBox(
                 width: 30,
               ),
