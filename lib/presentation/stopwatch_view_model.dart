@@ -12,8 +12,6 @@ class StopWatchViewModel with ChangeNotifier {
   String _sec = '00';
   String _hundredth = '00';
 
-  int get time => _time;
-
   bool get isRunning => _isRunning;
 
   bool get hasStarted => _hasStarted;
@@ -40,16 +38,12 @@ class StopWatchViewModel with ChangeNotifier {
     _hasStarted = true;
     _timer = Timer.periodic(const Duration(milliseconds: 10), (timer) {
       _time++;
-      debugPrint(_time.toString());
+      _min = '${(_time ~/ (100 * 60)) % 60}'.padLeft(2, '0');
+      _sec = '${(_time ~/ 100) % 60}'.padLeft(2, '0');
+      _hundredth = '${_time % 100}'.padLeft(2, '0');
+
+      notifyListeners();
     });
-
-    _min = '${(_time ~/ (100 * 60)) % 60}'.padLeft(2, '0');
-    _sec = '${(_time ~/ 100) % 60}'.padLeft(2, '0');
-    _hundredth = '${_time % 100}'.padLeft(2, '0');
-
-    debugPrint('$_min:$_sec:$_hundredth');
-
-    notifyListeners();
   }
 
   void pause() {

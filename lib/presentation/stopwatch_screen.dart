@@ -1,6 +1,6 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
+import 'package:flutter_stopwatch_app/presentation/stopwatch_view_model.dart';
+import 'package:provider/provider.dart';
 
 class StopWatchScreen extends StatefulWidget {
   const StopWatchScreen({super.key});
@@ -10,60 +10,9 @@ class StopWatchScreen extends StatefulWidget {
 }
 
 class _StopWatchScreenState extends State<StopWatchScreen> {
-  Timer? _timer;
-  int _time = 0;
-  bool _isRunning = false;
-  bool _hasStarted = false;
-
-  final List<dynamic> _labTimes = [];
-
-  void _clickButton() {
-    _isRunning = !_isRunning;
-
-    if (_isRunning) {
-      _start();
-    } else {
-      _pause();
-    }
-  }
-
-  void _start() {
-    _hasStarted = true;
-    _timer = Timer.periodic(const Duration(milliseconds: 10), (timer) {
-      setState(() {
-        _time++;
-      });
-    });
-  }
-
-  void _pause() {
-    _timer?.cancel();
-  }
-
-  void _reset() {
-    _isRunning = false;
-    _hasStarted = false;
-    _timer?.cancel();
-    _labTimes.clear();
-    _time = 0;
-  }
-
-  void _recordLabTime(String time) {
-    _labTimes.insert(0, [_labTimes.length + 1, time]);
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
-    String min = '${(_time ~/ (100 * 60)) % 60}'.padLeft(2, '0');
-    String sec = '${(_time ~/ 100) % 60}'.padLeft(2, '0');
-    String hundredth = '${_time % 100}'.padLeft(2, '0');
+    final viewModel = context.watch<StopWatchViewModel>();
 
     return Scaffold(
       body: Column(
@@ -75,15 +24,15 @@ class _StopWatchScreenState extends State<StopWatchScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                '$min:',
+                '${viewModel.min}:',
                 style: const TextStyle(fontSize: 80, color: Colors.greenAccent),
               ),
               Text(
-                '$sec.',
+                '${viewModel.sec}.',
                 style: const TextStyle(fontSize: 80, color: Colors.greenAccent),
               ),
               Text(
-                hundredth,
+                viewModel.hundredth,
                 style: const TextStyle(fontSize: 80, color: Colors.greenAccent),
               ),
             ],
@@ -94,20 +43,21 @@ class _StopWatchScreenState extends State<StopWatchScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _hasStarted == false
+              viewModel.hasStarted == false
                   ? const FloatingActionButton.large(
                       shape: CircleBorder(eccentricity: 0.1),
                       backgroundColor: Colors.grey,
                       onPressed: null,
                       child: Text('Lab'),
                     )
-                  : _isRunning
+                  : viewModel.isRunning
                       ? FloatingActionButton.large(
                           shape: const CircleBorder(eccentricity: 0.1),
                           backgroundColor: Colors.grey,
                           onPressed: () {
                             setState(() {
-                              _recordLabTime('$min:$sec.$hundredth');
+                              viewModel.recordLabTime(
+                                  '${viewModel.min}:${viewModel.sec}.${viewModel.hundredth}');
                             });
                           },
                           child: const Text('Lab'),
@@ -117,7 +67,7 @@ class _StopWatchScreenState extends State<StopWatchScreen> {
                           backgroundColor: Colors.grey,
                           onPressed: () {
                             setState(() {
-                              _reset();
+                              viewModel.reset();
                             });
                           },
                           child: const Text('Reset'),
@@ -127,20 +77,21 @@ class _StopWatchScreenState extends State<StopWatchScreen> {
               ),
               FloatingActionButton.large(
                 shape: const CircleBorder(eccentricity: 0.1),
-                backgroundColor: _isRunning ? Colors.redAccent : Colors.green,
+                backgroundColor:
+                    viewModel.isRunning ? Colors.redAccent : Colors.green,
                 onPressed: () {
-                  setState(() {
-                    _clickButton();
-                  });
+                  viewModel.clickButton();
                 },
-                child: _isRunning ? const Text('Stop') : const Text('Start'),
+                child: viewModel.isRunning
+                    ? const Text('Stop')
+                    : const Text('Start'),
               ),
             ],
           ),
           SizedBox(
             height: 300,
             child: ListView(
-                children: _labTimes
+                children: viewModel.labTimes
                     .map((time) => Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
@@ -158,18 +109,6 @@ class _StopWatchScreenState extends State<StopWatchScreen> {
           ),
         ],
       ),
-      // bottomNavigationBar: BottomNavigationBar(
-      //   items: const [
-      //     BottomNavigationBarItem(
-      //       icon: Icon(Icons.timer),
-      //       label: '스톱워치',
-      //     ),
-      //     BottomNavigationBarItem(
-      //       icon: Icon(Icons.av_timer),
-      //       label: '타이머',
-      //     ),
-      //   ],
-      // ),
     );
   }
 }
