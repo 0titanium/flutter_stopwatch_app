@@ -48,6 +48,8 @@ class StopWatchViewModel with ChangeNotifier {
 
   void pause() {
     _timer?.cancel();
+
+    notifyListeners();
   }
 
   void reset() {
@@ -56,6 +58,9 @@ class StopWatchViewModel with ChangeNotifier {
     _timer?.cancel();
     _labTimes.clear();
     _time = 0;
+    _min = '00';
+    _sec = '00';
+    _hundredth = '00';
 
     debugPrint('$_min:$_sec:$_hundredth');
 
@@ -64,6 +69,7 @@ class StopWatchViewModel with ChangeNotifier {
 
   void recordLabTime(String time) {
     _labTimes.insert(0, [_labTimes.length + 1, time]);
+    debugPrint(_labTimes.toList().toString());
   }
 
   @override
